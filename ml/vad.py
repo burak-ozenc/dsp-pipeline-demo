@@ -2,6 +2,7 @@
 
 import torch
 import numpy as np
+from prefect import task
 
 from schema.vad_result import VADResult
 
@@ -14,6 +15,7 @@ model, utils = torch.hub.load(
 
 get_speech_timestamps, _, read_audio, _, _ = utils
 
+@task
 def run_vad(file_path: str, audio_file_id: UUID) -> VADResult:
     audio = read_audio(file_path)
 

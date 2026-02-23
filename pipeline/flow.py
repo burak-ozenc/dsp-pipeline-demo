@@ -3,7 +3,7 @@ from pathlib import Path
 
 from prefect import flow
 
-from config import config
+from config.config import config
 from dsp.analyze import analyze_audio
 from ingestion.discover import discover_files
 from ml.vad import run_vad
@@ -122,4 +122,4 @@ def process_audio_pipeline(source_dir: str):
                     processed_at=datetime.now()
                 )
 
-
+process_audio_pipeline(config.DATA_ROOT_PATH,2000)

@@ -1,0 +1,7 @@
+﻿deployments:
+  - name: dsp-etl-pipeline
+    entrypoint: pipeline/flow.py:process_audio_pipeline
+    pull:
+      - prefect.deployments.steps.git_clone:
+          repository: https://github.com/burak-ozenc/dsp-pipeline-demo
+          branch: master

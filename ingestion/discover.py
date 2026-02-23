@@ -1,10 +1,10 @@
-﻿from prefect import flow, task 
+﻿from prefect import task 
 from pathlib import Path
 from itertools import islice
 import hashlib
 
 @task
-def discover_files(path, limit=10):
+def discover_files(path, limit=15):
     """
     Get wav files, hash them, get size/name etc. depending on the path
     """

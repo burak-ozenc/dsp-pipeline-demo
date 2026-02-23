@@ -63,4 +63,7 @@ current implementation handles thousands of files efficiently. at TB scale the f
 cp .env.example .env
 ```
 - To install Prefect, follow the docs [here](https://docs.prefect.io/v3/get-started/quickstart)
-- Deploy your app and run with uvx
+- Just run the flow:
+```
+python -m pipeline.flow
+```

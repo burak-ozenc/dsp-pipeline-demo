@@ -2,7 +2,10 @@
 
 import psycopg
 
-from config import config
+from dotenv import load_dotenv
+load_dotenv()
+
+from config.config import config
 from schema import AudioAnalytic, VADResult
 from schema.audio_metadata import AudioFileMetadata
 

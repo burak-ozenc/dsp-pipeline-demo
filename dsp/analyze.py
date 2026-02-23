@@ -1,8 +1,10 @@
 ﻿import librosa
 import numpy as np
+from prefect import task
 
 from schema.audio_analytic import AudioAnalytic
 
+@task
 def analyze_audio(file_path: str) -> AudioAnalytic:
     """
     We will extract some features from given audio(path):
