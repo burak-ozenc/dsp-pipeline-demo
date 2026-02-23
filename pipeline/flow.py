@@ -18,7 +18,8 @@ def process_audio_pipeline(source_dir: str):
     with Loader() as loader:
         for file in files:
             try:
-                if loader.check_file_exists(file['file_hash']):
+                status = loader.get_file_status(file['file_hash'])
+                if status == 'completed':
                     continue
                     
                 source_type = Path(file['file_path']).parts[3]

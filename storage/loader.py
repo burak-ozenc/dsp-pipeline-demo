@@ -62,13 +62,42 @@ class Loader:
                            'file_path, file_name, file_size, file_hash,'
                            ' audio_source_id, initial_sr, duration_ms, channel_count'
                            ') '
-                           'values (%s, %s, %s, %s, %s, %s, %s, %s)',
+                           'values (%s, %s, %s, %s, %s, %s, %s, %s) '
+                           'returning id;',
                            (metadata.file_path, metadata.file_name, metadata.file_size, metadata.file_hash,
                             metadata.audio_source_id, metadata.initial_sr, metadata.duration_ms,
-                            metadata.channel_count ))
+                            metadata.channel_count))
+            new_id = cursor.fetchone()[0]
             self.conn.commit()
 
-    def update_file_status(self, file_id: str, status: str, processed_at=None):
+            return new_id
+
+    def insert_audio_analytics(self, analytic: AudioAnalytic):
+        with self.conn.cursor() as cursor:
+            cursor.execute('insert into audio_analytics('
+                           'audio_file_id, audio_source_id, snr_db,clipping_ratio,max_amplitude,dynamic_range,'
+                           'signal_to_quantatization_ratio,band_energy_ratio,spectral_centroid_mean,zcr_std,zcr_mean,'
+                           'silence_ratio,bandwith_mean,bandwith_std,source_type'
+                           ') '
+                           'values (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);',
+                           (analytic.audio_file_id, analytic.audio_source_id, analytic.snr_db, analytic.clipping_ratio,
+                            analytic.max_amplitude, analytic.dynamic_range, analytic.signal_to_quantatization_ratio,
+                            analytic.band_energy_ratio, analytic.spectral_centroid_mean, analytic.zcr_std,
+                            analytic.zcr_mean, analytic.silence_ratio, analytic.bandwith_mean,
+                            analytic.bandwith_std, analytic.source_type,))
+
+            self.conn.commit()
+
+    def insert_ml_label(self, vad_result: VADResult, audio_file_id: UUID):
+        with self.conn.cursor() as cursor:
+            cursor.execute('insert into ml_labels('
+                           'audio_file_id, is_speech, speech_confidence'
+                           ') '
+                           'values (%s, %s, %s);',
+                           (audio_file_id, vad_result.is_speech, vad_result.speech_confidence))
+            self.conn.commit()
+
+    def update_file_status(self, file_id: UUID, status: str, processed_at=None):
         with self.conn.cursor() as cursor:
             if processed_at:
                 cursor.execute('UPDATE audio_files '
@@ -80,8 +109,5 @@ class Loader:
                                'SET status = %s '
                                'WHERE id = %s',
                                (status, file_id))
-                
+
             self.conn.commit()
-
-
-check_file_exists('0bb1a5c6e5467cbf129d3fe8c80fc4ff')
