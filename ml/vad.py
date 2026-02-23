@@ -1,4 +1,6 @@
-﻿import torch
+﻿from uuid import UUID
+
+import torch
 import numpy as np
 
 from schema.vad_result import VADResult
@@ -12,7 +14,7 @@ model, utils = torch.hub.load(
 
 get_speech_timestamps, _, read_audio, _, _ = utils
 
-def run_vad(file_path: str) -> VADResult:
+def run_vad(file_path: str, audio_file_id: UUID) -> VADResult:
     audio = read_audio(file_path)
 
     window_size = 512  # samples (for 16kHz: 512 or 1536)
@@ -30,6 +32,7 @@ def run_vad(file_path: str) -> VADResult:
     final_conf = float(np.average(confidences))
     
     res = VADResult(
+        audio_file_id=audio_file_id,
         is_speech=final_conf > 0.5,
         speech_confidence=final_conf,
     )
