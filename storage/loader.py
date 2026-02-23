@@ -1,6 +1,9 @@
-﻿import psycopg
+﻿from uuid import UUID
+
+import psycopg
 
 from config import config
+from schema import AudioAnalytic, VADResult
 from schema.audio_metadata import AudioFileMetadata
 
 
@@ -20,6 +23,29 @@ class Loader:
             self.conn.close()
 
         return False
+
+    def get_or_create_audio_source(self, source_name: str) -> UUID:
+        # try to find existing
+
+        with self.conn.cursor() as cursor:
+            cursor.execute('select id '
+                           'from audio_sources '
+                           'where audio_source_name = %s ',
+                           (source_name,))
+
+            row = cursor.fetchone()
+            if row is not None:
+                return row[0]
+            # if not found, insert and return new id
+            else:
+                cursor.execute('insert into audio_sources '
+                               '(audio_source_name) '
+                               'values (%s) '
+                               'returning id;',
+                               (source_name,))
+                new_id = cursor.fetchone()[0]
+                self.conn.commit()
+                return new_id
 
     def check_file_exists(self, file_hash) -> bool:
         with self.conn.cursor() as cursor:

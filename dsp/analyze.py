@@ -26,7 +26,6 @@ def analyze_audio(file_path: str) -> AudioAnalytic:
         silence_ratio=calc_silence_ratio(audio=y),
         bandwith_mean=bw_mean,
         bandwith_std=bw_std,
-        # source_type=
     )
 
     return analytics
@@ -49,14 +48,14 @@ def calc_zcr(audio) -> tuple[float, float]:
 
 
 def calc_rms_mean(audio):
-    rms = librosa.feature.rms(audio)[0]
+    rms = librosa.feature.rms(y=audio)[0]
     rms_mean = np.mean(rms)
 
     return rms_mean
 
 
 def calc_spectral_centroid_mean(audio):
-    spectral_centroid = librosa.feature.spectral_centroid(audio)[0]
+    spectral_centroid = librosa.feature.spectral_centroid(y=audio)[0]
     spectral_centroid_mean = np.mean(spectral_centroid)
 
     return spectral_centroid_mean
@@ -66,7 +65,7 @@ def calc_silence_ratio(audio):
     """
     we assume that silence ratio something like 5 percent of max rms 
     """
-    rms = librosa.feature.rms(audio)[0]
+    rms = librosa.feature.rms(y=audio)[0]
     max_rms = np.max(rms)
     threshold = max_rms * 0.05
     silence_ratio = np.sum(rms < threshold) / len(rms)
@@ -84,7 +83,7 @@ def calc_snr(audio):
     """
     we assume that noise ratio is something like 10 percent of max rms  
     """
-    rms = librosa.feature.rms(audio)[0]
+    rms = librosa.feature.rms(y=audio)[0]
     # noise threshold
     noise_threshold = np.percentile(rms, 10)
     noise_frames = rms[rms <= noise_threshold]
@@ -129,7 +128,7 @@ def calc_signal_to_quantization_noise_ratio(audio):
 
 
 def calc_bandwidth(audio) -> tuple[float, float]:
-    bandwidth = librosa.feature.spectral_bandwidth(audio)[0]
+    bandwidth = librosa.feature.spectral_bandwidth(y=audio,sr=16000)
     bandwidth_mean = np.mean(bandwidth)
     bandwidth_std = np.std(bandwidth)
 
