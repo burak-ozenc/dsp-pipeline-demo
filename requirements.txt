@@ -1,7 +1,7 @@
 ﻿prefect
-prefect-cloud
 librosa
 numpy
-psycopg
-pytorch
+psycopg[binary]
+torch
 torchaudio
+python-dotenv

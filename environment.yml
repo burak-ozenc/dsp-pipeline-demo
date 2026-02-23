@@ -1,0 +1,16 @@
+﻿name: audio-pipeline
+channels:
+  - pytorch
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - numpy
+  - pip
+  - pip:
+      - prefect
+      - librosa
+      - psycopg[binary]
+      - torch
+      - torchaudio
+      - python-dotenv

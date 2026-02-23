@@ -26,20 +26,22 @@ def process_audio_pipeline(source_dir: str):
                 source_type = Path(file['file_path']).parts[3]
                 audio_source_id = loader.get_or_create_audio_source(source_type)
                 # 1. insert file record, mark as processing
-                new_audio_file_id = loader.insert_audio_file(AudioFileMetadata(
+
+                new_audio_file_id = loader.get_or_insert_audio_file(AudioFileMetadata(
                     file_path=file['file_path'],
                     file_name=file['file_name'],
                     file_size=file['file_size'],
                     file_hash=file['file_hash'],
                     audio_source_id=audio_source_id,
                 ))
+
                 loader.update_file_status(file_id=new_audio_file_id, status='processing')
 
                 # 2. run dsp analysis
                 analysis = analyze_audio(file_path=file['file_path'])
 
                 # 3. run vad
-                vad_result = run_vad(file_path=file['file_path'],audio_file_id=new_audio_file_id)
+                vad_result = run_vad(file_path=file['file_path'], audio_file_id=new_audio_file_id)
 
                 # add bulk insert for dsp analysis
                 analytics_batch.append(
@@ -69,21 +71,21 @@ def process_audio_pipeline(source_dir: str):
                     speech_confidence=vad_result.speech_confidence,
                 ))
 
-                if len(analytics_batch) >= 100:
+                if len(analytics_batch) >= 10:
                     try:
                         loader.bulk_insert_analytics(analytics_batch)
                         loader.bulk_insert_ml_labels(ml_label_batch)
-                        for ml_label in analytics_batch:
+                        for analytic in analytics_batch:
                             loader.update_file_status(
-                                file_id=ml_label.audio_file_id,
+                                file_id=analytic.audio_file_id,
                                 status='completed',
                                 processed_at=datetime.now()
                             )
                     except Exception as e:
                         print("Failed to bulk insert analytics: {}".format(e))
-                        for ml_label in analytics_batch:
+                        for analytic in analytics_batch:
                             loader.update_file_status(
-                                file_id=ml_label.audio_file_id,
+                                file_id=analytic.audio_file_id,
                                 status='failed'
                             )
                         for ml_label in ml_label_batch:
@@ -94,8 +96,6 @@ def process_audio_pipeline(source_dir: str):
                     analytics_batch.clear()
                     ml_label_batch.clear()
 
-                # 6. mark as completed
-                # loader.update_file_status(file_id=new_audio_file_id, status='completed', processed_at=datetime.now())
                 print("File processed {}".format(file['file_name']))
 
             except Exception as e:
@@ -106,8 +106,20 @@ def process_audio_pipeline(source_dir: str):
                 pass
         # flush remaining  analysis
         if analytics_batch:
-            loader.bulk_insert_analytics(analytics_batch)    
+            loader.bulk_insert_analytics(analytics_batch)
+            for analytic in analytics_batch:
+                loader.update_file_status(
+                    file_id=analytic.audio_file_id,
+                    status='completed',
+                    processed_at=datetime.now()
+                )
         if ml_label_batch:
-            loader.bulk_insert_ml_labels(ml_label_batch)    
-        
+            loader.bulk_insert_ml_labels(ml_label_batch)
+            for analytic in ml_label_batch:
+                loader.update_file_status(
+                    file_id=analytic.audio_file_id,
+                    status='completed',
+                    processed_at=datetime.now()
+                )
+
 

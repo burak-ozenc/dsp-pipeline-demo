@@ -54,3 +54,12 @@ current implementation handles thousands of files efficiently. at TB scale the f
 - **Partitioning strategy**: add time-based partitioning alongside source_type for efficient time-range queries on large datasets
 - **FFmpeg preprocessing**: normalize heterogeneous audio formats before ingestion — essential when ingesting from multiple real-world sources
 - **Distributed orchestration**: Prefect''s work pools support distributed execution across multiple machines
+
+## Setup
+- Download the dataset from [MUSAN](https://openslr.org/17)
+- Create a data folder in project, and unzip the dataset to this folder
+- Create an .env file and set env variables
+```
+cp .env.example .env
+```
+

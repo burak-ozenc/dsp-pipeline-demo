@@ -54,21 +54,31 @@ class Loader:
             row = cursor.fetchone()
             return row[0] if row else None
 
-    def insert_audio_file(self, metadata: AudioFileMetadata):
+    def get_or_insert_audio_file(self, metadata: AudioFileMetadata):
         with self.conn.cursor() as cursor:
-            cursor.execute('insert into audio_files('
-                           'file_path, file_name, file_size, file_hash,'
-                           ' audio_source_id, initial_sr, duration_ms, channel_count'
-                           ') '
-                           'values (%s, %s, %s, %s, %s, %s, %s, %s) '
-                           'returning id;',
-                           (metadata.file_path, metadata.file_name, metadata.file_size, metadata.file_hash,
-                            metadata.audio_source_id, metadata.initial_sr, metadata.duration_ms,
-                            metadata.channel_count))
-            new_id = cursor.fetchone()[0]
-            self.conn.commit()
+            cursor.execute('select id '
+                           'from audio_files '
+                           'where file_hash = %s ',
+                           (metadata.file_hash,))
 
-            return new_id
+            row = cursor.fetchone()
+            if row is not None:
+                return row[0]
+            # if not found, insert and return new id
+            else:
+                cursor.execute('insert into audio_files('
+                               'file_path, file_name, file_size, file_hash,'
+                               ' audio_source_id, initial_sr, duration_ms, channel_count'
+                               ') '
+                               'values (%s, %s, %s, %s, %s, %s, %s, %s) '
+                               'returning id;',
+                               (metadata.file_path, metadata.file_name, metadata.file_size, metadata.file_hash,
+                                metadata.audio_source_id, metadata.initial_sr, metadata.duration_ms,
+                                metadata.channel_count))
+                new_id = cursor.fetchone()[0]
+                self.conn.commit()
+    
+                return new_id
 
     def insert_audio_analytics(self, analytic: AudioAnalytic):
         with self.conn.cursor() as cursor:
