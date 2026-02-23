@@ -12,8 +12,3 @@ class AudioFileMetadata:
     initial_sr: float = None
     duration_ms: int = None
     channel_count: int = None
-
-
-class FoobarEnum(str, Enum):
-    FIRST = "foobar"
-    SECOND = "baz"

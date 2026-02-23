@@ -3,3 +3,5 @@ prefect-cloud
 librosa
 numpy
 psycopg
+pytorch
+torchaudio
