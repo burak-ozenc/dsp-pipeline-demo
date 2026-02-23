@@ -36,7 +36,7 @@ def calc_clipping_ratio(audio):
     clipped_samples = np.sum(np.abs(audio) >= threshold)
     clipping_ratio = clipped_samples / audio.size
 
-    return clipping_ratio
+    return safe_float(clipping_ratio)
 
 
 def calc_zcr(audio) -> tuple[float, float]:
@@ -44,21 +44,21 @@ def calc_zcr(audio) -> tuple[float, float]:
     zcr_mean = np.mean(zcr)
     zcr_std = np.std(zcr)
     
-    return zcr_std, zcr_mean 
+    return safe_float(zcr_std), safe_float(zcr_mean) 
 
 
 def calc_rms_mean(audio):
     rms = librosa.feature.rms(y=audio)[0]
     rms_mean = np.mean(rms)
 
-    return rms_mean
+    return safe_float(rms_mean)
 
 
 def calc_spectral_centroid_mean(audio):
     spectral_centroid = librosa.feature.spectral_centroid(y=audio)[0]
     spectral_centroid_mean = np.mean(spectral_centroid)
 
-    return spectral_centroid_mean
+    return safe_float(spectral_centroid_mean)
 
 
 def calc_silence_ratio(audio):
@@ -70,13 +70,13 @@ def calc_silence_ratio(audio):
     threshold = max_rms * 0.05
     silence_ratio = np.sum(rms < threshold) / len(rms)
 
-    return silence_ratio
+    return safe_float(silence_ratio)
 
 
 def calc_max_amplitude(audio):
     max_amplitude = np.max(audio)
 
-    return max_amplitude
+    return safe_float(max_amplitude)
 
 
 def calc_snr(audio):
@@ -97,7 +97,7 @@ def calc_snr(audio):
 
     sound_to_noise_ratio = 10 * np.log10(signal_power / noise_power)
 
-    return sound_to_noise_ratio
+    return safe_float(sound_to_noise_ratio) 
 
 
 def calc_dynamic_range(audio):
@@ -106,7 +106,7 @@ def calc_dynamic_range(audio):
     min_amplitude = np.percentile(np.abs(audio), 1)
     dynamic_range_db = 10 * np.log10(np.abs(max_amplitude / min_amplitude))
 
-    return dynamic_range_db
+    return safe_float(dynamic_range_db) 
 
 
 def calc_signal_to_quantization_noise_ratio(audio):
@@ -124,7 +124,7 @@ def calc_signal_to_quantization_noise_ratio(audio):
 
     sqnr_db = 10 * np.log10((signal_rms / quantization_noise_rms) ** 2)
 
-    return sqnr_db
+    return safe_float(sqnr_db) 
 
 
 def calc_bandwidth(audio) -> tuple[float, float]:
@@ -132,7 +132,7 @@ def calc_bandwidth(audio) -> tuple[float, float]:
     bandwidth_mean = np.mean(bandwidth)
     bandwidth_std = np.std(bandwidth)
 
-    return bandwidth_mean, bandwidth_std
+    return safe_float(bandwidth_mean) , safe_float(bandwidth_std)
 
 
 def calc_band_energy_ratio(audio, sr):
@@ -154,4 +154,12 @@ def calc_band_energy_ratio(audio, sr):
     band_energy_ratio = low_band_energy / high_band_energy
     band_energy_ratio_db = 10 * np.log10(band_energy_ratio)
 
-    return band_energy_ratio_db
+    return safe_float(band_energy_ratio_db)
+
+# helper to handle edge cases Infinity or Nan
+def safe_float(value) -> float | None:
+    if value is None:
+        return None
+    if np.isinf(value) or np.isnan(value):
+        return None
+    return float(value)
